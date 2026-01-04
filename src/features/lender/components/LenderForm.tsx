@@ -1,8 +1,15 @@
 import { useState } from "react";
 import type { LenderFormData } from "../types";
+import { createMatchingEngine } from "../api";
 import { cn } from "@/lib/utils";
 
 export function LenderForm() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<{
+    type: "success" | "error" | null;
+    message: string;
+  }>({ type: null, message: "" });
+
   const [formData, setFormData] = useState<LenderFormData>({
     business_name: "",
     geographic_location: "",
@@ -28,11 +35,27 @@ export function LenderForm() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form Data:", formData);
-    // Here you would typically send data to backend
-    alert("Application Submitted! Check console for data.");
+    setIsLoading(true);
+    setSubmitStatus({ type: null, message: "" });
+
+    try {
+      await createMatchingEngine(formData);
+      setSubmitStatus({
+        type: "success",
+        message: "Application Submitted Successfully!",
+      });
+      // Optional: Reset form or redirect
+    } catch (error) {
+      console.error("Submission error:", error);
+      setSubmitStatus({
+        type: "error",
+        message: "Failed to submit application. Please try again.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const inputClasses =
@@ -56,6 +79,17 @@ export function LenderForm() {
             onSubmit={handleSubmit}
             className="grid grid-cols-1 md:grid-cols-2 gap-6"
           >
+            {submitStatus.type && (
+              <div
+                className={`md:col-span-2 p-4 rounded-md ${
+                  submitStatus.type === "success"
+                    ? "bg-green-50 text-green-700 border border-green-200"
+                    : "bg-red-50 text-red-700 border border-red-200"
+                }`}
+              >
+                {submitStatus.message}
+              </div>
+            )}
             {/* Business Details Section */}
             <div className="md:col-span-2">
               <h3 className="text-lg font-medium leading-6 text-gray-900 border-b border-gray-200 pb-2 mb-4">
@@ -107,7 +141,7 @@ export function LenderForm() {
 
             <div>
               <label htmlFor="business_duration" className={labelClasses}>
-                Duration (Years)
+                Duration (Months)
               </label>
               <input
                 type="number"
@@ -256,9 +290,10 @@ export function LenderForm() {
             <div className="md:col-span-2 pt-6">
               <button
                 type="submit"
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
+                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isLoading}
               >
-                Submit Application
+                {isLoading ? "Submitting..." : "Submit Application"}
               </button>
             </div>
           </form>
