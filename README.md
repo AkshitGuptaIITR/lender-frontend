@@ -1,73 +1,138 @@
-# React + TypeScript + Vite
+# Lender Frontend Application
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, responsive web application for lender matching and eligibility assessment. Built with React, TypeScript, and Tailwind CSS.
 
-Currently, two official plugins are available:
+## 🚀 Local Development Setup
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Follow these steps to get the project running on your local machine.
 
-## React Compiler
+### Prerequisites
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Node.js (v18 or higher recommended)
+- npm (comes with Node.js)
 
-## Expanding the ESLint configuration
+### Installation
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+1.  **Clone the repository** (if applicable) or navigate to the project directory:
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+    ```bash
+    cd lender-frontend
+    ```
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+2.  **Install dependencies**:
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+    ```bash
+    npm install
+    ```
+
+3.  **Start the development server**:
+
+    ```bash
+    npm run dev
+    ```
+
+    The application will be available at `http://localhost:5173`.
+
+4.  **Build for production**:
+
+    ```bash
+    npm run build
+    ```
+
+5.  **Lint the codebase**:
+    ```bash
+    npm run lint
+    ```
+
+## 🏗️ Architecture Overview
+
+This project follows a feature-based architecture to ensure scalability and maintainability.
+
+### Technology Stack
+
+- **Framework**: [React](https://react.dev/) + [Vite](https://vitejs.dev/)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
+- **HTTP Client**: [Axios](https://axios-http.com/)
+
+### Folder Structure
+
+```
+src/
+├── features/           # Feature-based modules
+│   └── lender/         # Lender matching feature
+│       ├── api/        # API integration logic
+│       ├── components/ # React components (LenderForm, MatchingResults)
+│       └── types/      # TypeScript interfaces
+├── components/         # Shared/Common components
+├── lib/                # Library configurations (Axios, utils)
+├── App.tsx             # Main application entry point
+└── main.tsx            # Application bootstrap
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Key Components
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- **`LenderForm`**: The primary input form for user data. Handles state, validation, and API submission.
+- **`MatchingResults`**: Displays the eligibility results, fit scores, and rejection reasons in a visual format.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
+## 📡 API Documentation
+
+The application integrates with a backend Matching Engine API.
+
+### Endpoint
+
+**POST** `http://127.0.0.1:8000/api/v1/matching-engine`
+
+### Request Body (`LenderFormData`)
+
+The API expects a JSON object with the following fields:
+
+```json
+{
+  "business_name": "Acme Corp",
+  "geographic_location": "New York, NY",
+  "industry_type": "Manufacturing",
+  "revenue": 500000.0,
+  "equipment_type": "Excavator",
+  "business_duration": 4,
+  "paynet_score": 680,
+  "personal_guarantor_name": "John Doe",
+  "fico_score": 720,
+  "trade_lines": 10,
+  "credit_history_flags": "None",
+  "loan_amount": 10000
+}
+```
+
+### Response Format (`MatchingResponse`)
+
+The API returns a JSON object containing the matching results:
+
+```json
+{
+  "status": "success",
+  "message": "",
+  "data": [
+    {
+      "id": 11,
+      "eligibility": "NO",
+      "matching_tier": null,
+      "rejection_reason": "App only up to $150,000...",
+      "fit_score": 0,
+      "lender_policy_id": 41,
+      "business_name": "Acme Corp",
+      "personal_guarantor_name": "John Doe",
+      ...
     },
-  },
-])
+    {
+      "id": 13,
+      "eligibility": "YES",
+      "matching_tier": null,
+      "rejection_reason": null,
+      "fit_score": 100,
+      "lender_policy_id": 43,
+       ...
+    }
+  ]
+}
 ```
