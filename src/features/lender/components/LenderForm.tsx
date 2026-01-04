@@ -85,6 +85,7 @@ export function LenderForm() {
       credit_history_flags: "",
       loan_amount: 0,
     });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const inputClasses =
