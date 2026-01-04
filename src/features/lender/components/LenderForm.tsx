@@ -1,7 +1,8 @@
 import { useState } from "react";
-import type { LenderFormData } from "../types";
+import type { LenderFormData, MatchingResult } from "../types";
 import { createMatchingEngine } from "../api";
 import { cn } from "@/lib/utils";
+import { MatchingResults } from "./MatchingResults";
 
 export function LenderForm() {
   const [isLoading, setIsLoading] = useState(false);
@@ -9,6 +10,7 @@ export function LenderForm() {
     type: "success" | "error" | null;
     message: string;
   }>({ type: null, message: "" });
+  const [results, setResults] = useState<MatchingResult[] | null>(null);
 
   const [formData, setFormData] = useState<LenderFormData>({
     business_name: "",
@@ -41,12 +43,19 @@ export function LenderForm() {
     setSubmitStatus({ type: null, message: "" });
 
     try {
-      await createMatchingEngine(formData);
-      setSubmitStatus({
-        type: "success",
-        message: "Application Submitted Successfully!",
-      });
-      // Optional: Reset form or redirect
+      const response = await createMatchingEngine(formData);
+      if (response.status === "success") {
+        setResults(response.data);
+        setSubmitStatus({
+          type: "success",
+          message: "Application Submitted Successfully!",
+        });
+      } else {
+        setSubmitStatus({
+          type: "error",
+          message: response.message || "Failed to submit application.",
+        });
+      }
     } catch (error) {
       console.error("Submission error:", error);
       setSubmitStatus({
@@ -58,9 +67,32 @@ export function LenderForm() {
     }
   };
 
+  const handleReset = () => {
+    setResults(null);
+    setSubmitStatus({ type: null, message: "" });
+    setFormData({
+      business_name: "",
+      geographic_location: "",
+      industry_type: "",
+      revenue: 0,
+      equipment_type: "",
+      business_duration: 0,
+      paynet_score: 0,
+      personal_guarantor_name: "",
+      fico_score: 0,
+      trade_lines: 0,
+      credit_history_flags: "",
+      loan_amount: 0,
+    });
+  };
+
   const inputClasses =
     "mt-1 block w-full rounded-md border-gray-300 bg-white/50 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm py-2 px-3 backdrop-blur-sm transition-all duration-200 hover:bg-white/80";
   const labelClasses = "block text-sm font-medium text-gray-700 mb-1";
+
+  if (results) {
+    return <MatchingResults results={results} onReset={handleReset} />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
