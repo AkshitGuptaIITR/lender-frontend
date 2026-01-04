@@ -44,6 +44,7 @@ export function LenderForm() {
 
     try {
       const response = await createMatchingEngine(formData);
+      window.scrollTo({ top: 0, behavior: "smooth" });
       if (response.status === "success") {
         setResults(response.data);
         setSubmitStatus({
